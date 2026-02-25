@@ -35,7 +35,7 @@ pip install -r requirements.txt
 ```
 
 ## File Structure
-Snake/
+```Snake/
 ├── game.py          # Game environment class
 ├── ql_agent.py      # Q-learning agent
 ├── train.py         # Training script
@@ -45,6 +45,7 @@ Snake/
 ├── requirements.txt # Dependency list
 ├── README.md        # Project documentation
 └── training_curve.png # Training curve (generated after running train.py)
+```
 
 ## Usage
 1. Train the AI Model
@@ -60,9 +61,9 @@ After training, start the main program:
 python main.py
 ```
 
-Select Start Game (Manual): Control the snake with arrow keys and experience the game.
-Select AI Demo: Load the trained qtable.pkl and watch the AI play automatically.
-Select Exit: Quit the program.
+  - Select Start Game: Control the snake with arrow keys and experience the game.
+  - Select AI Demo: Load the trained qtable.pkl and watch the AI play automatically.
+  - Select Exit: Quit the program.
 
 ## Customization
 Training parameters: Adjust episodes, render_every, etc., in train.py.
@@ -109,8 +110,52 @@ This project is for educational purposes only. Licensed under the MIT License.
   - 游戏结束弹窗，可选择重玩或退出。
 
 ## 安装依赖
-
 确保已安装 Python 3.8+，然后使用 pip 安装所需库：
-
 ```bash
 pip install -r requirements.txt
+```
+
+## 文件结构
+```Snake_RL/
+├── game.py          # 游戏环境类
+├── ql_agent.py      # Q-learning智能体
+├── train.py         # 训练脚本
+├── main.py          # 主程序（菜单+手动/AI模式）
+├── menu.py          # 主菜单界面
+├── button.py        # 按钮类
+├── requirements.txt # 依赖列表
+├── README.md        # 项目说明
+└── training_curve.png # 训练曲线（运行train.py后生成）
+```
+
+## 使用方法
+1. 训练AI模型
+运行以下命令开始训练（默认10000轮，每1000轮渲染一次）：
+```bash
+python train.py
+```
+训练过程中每1000轮输出一次最近1000轮的平均得分，训练结束后生成学习曲线training_curve.png，并保存Q表为qtable.pkl。
+
+2. 运行游戏
+训练完成后，启动主程序：
+```bash
+python main.py
+```
+  - 选择 开始游戏 ：使用键盘方向键控制蛇，体验游戏。
+  - 选择 AI训练演示：加载训练好的qtable.pkl，观看AI自动游戏。
+  - 选择 退出：退出程序。
+
+## 自定义
+  - 训练参数：在train.py中调整episodes、render_every等。
+  - 游戏规则：在game.py中调整奖励值、毒药出现时间、速度阈值等。
+  - UI布局：在main.py中调整文字位置、按钮坐标等。
+
+## 训练结果示例
+经过10000轮训练，AI的平均得分逐渐提升，最终能稳定获得一定分数。下图展示了训练曲线：
+https://training_curve.png
+
+## 注意事项
+  -训练耗时可能较长，建议设置render_every=0关闭渲染以加速训练。
+  -若AI演示时找不到qtable.pkl，请先运行train.py生成模型文件。
+  -本项目的Q-table采用离散化方法，状态空间有限，因此性能受限于离散化粒度。如需更高性能，可尝试DQN。
+
