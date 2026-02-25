@@ -74,9 +74,9 @@ After 10,000 episodes of training, the AI's average score gradually improves, ev
 https://training_curve.png
 
 ## Notes
-Training can be time-consuming; set render_every=0 to disable rendering and speed up training.
-If AI demo cannot find qtable.pkl, please run train.py first to generate the model file.
-This project uses a discretized Q-table, so performance is limited by the discretization granularity. For higher performance, consider using DQN.
+  - Training can be time-consuming; set render_every=0 to disable rendering and speed up training.
+  - If AI demo cannot find qtable.pkl, please run train.py first to generate the model file.
+  - This project uses a discretized Q-table, so performance is limited by the discretization granularity. For higher performance, consider using DQN.
 
 ## License
 This project is for educational purposes only. Licensed under the MIT License.
@@ -154,7 +154,7 @@ python main.py
 https://training_curve.png
 
 ## 注意事项
-  -训练耗时可能较长，建议设置render_every=0关闭渲染以加速训练。
-  -若AI演示时找不到qtable.pkl，请先运行train.py生成模型文件。
-  -本项目的Q-table采用离散化方法，状态空间有限，因此性能受限于离散化粒度。如需更高性能，可尝试DQN。
+  - 训练耗时可能较长，建议设置render_every=0关闭渲染以加速训练。
+  - 若AI演示时找不到qtable.pkl，请先运行train.py生成模型文件。
+  - 本项目的Q-table采用离散化方法，状态空间有限，因此性能受限于离散化粒度。如需更高性能，可尝试DQN。
 
