@@ -32,8 +32,9 @@ Make sure you have Python 3.8+ installed, then install the required libraries us
 
 ```bash
 pip install -r requirements.txt
+```
 
-File Structure
+## File Structure
 Snake/
 ├── game.py          # Game environment class
 ├── ql_agent.py      # Q-learning agent
@@ -45,7 +46,7 @@ Snake/
 ├── README.md        # Project documentation
 └── training_curve.png # Training curve (generated after running train.py)
 
-Usage
+## Usage
 1. Train the AI Model
 Run the following command to start training (default: 10,000 episodes, render every 1,000 episodes):
 python train.py
@@ -55,32 +56,31 @@ During training, the average score of the last 1,000 episodes is printed every 1
 2. Run the Game
 After training, start the main program:
 
-bash
+```bash
 python main.py
+```
 
 Select Start Game (Manual): Control the snake with arrow keys and experience the game.
 Select AI Demo: Load the trained qtable.pkl and watch the AI play automatically.
 Select Exit: Quit the program.
 
-Customization
+## Customization
 Training parameters: Adjust episodes, render_every, etc., in train.py.
-
 Game rules: Modify reward values, poison appearance time, speed thresholds, etc., in game.py.
-
 UI layout: Adjust text positions, button coordinates, etc., in main.py.
 
-Example Training Result
+## Example Training Result
 After 10,000 episodes of training, the AI's average score gradually improves, eventually stabilizing at a certain level. The figure below shows the training curve:
-
 https://training_curve.png
 
-Notes
+## Notes
 Training can be time-consuming; set render_every=0 to disable rendering and speed up training.
 If AI demo cannot find qtable.pkl, please run train.py first to generate the model file.
 This project uses a discretized Q-table, so performance is limited by the discretization granularity. For higher performance, consider using DQN.
 
-License
+## License
 This project is for educational purposes only. Licensed under the MIT License.
+
 
 # Snake RL - 基于 Q-learning 的贪吃蛇 AI
 
