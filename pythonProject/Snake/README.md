@@ -1,6 +1,5 @@
 # Individual-Assignment_Gluttonous-Snake
-Q-learning Gluttonous Snake
-# Snake RL - Q-learning based Snake AI
+# Gluttonous Snake - Q-learning based Snake AI
 
 This project is a reinforcement learning game that uses the Q-learning algorithm to train a snake AI. The game includes food (gems) and poison elements. The AI needs to learn to eat food and avoid poison. The game interface supports manual control, AI demonstration, dynamic speed, pause, real-time action/reward display, and more.
 
@@ -83,7 +82,7 @@ This project uses a discretized Q-table, so performance is limited by the discre
 This project is for educational purposes only. Licensed under the MIT License.
 
 
-# Snake RL - 基于 Q-learning 的贪吃蛇 AI
+# Gluttonous Snake - 基于 Q-learning 的贪吃蛇 AI
 
 本项目是一个使用 Q-learning 算法训练贪吃蛇 AI 的强化学习游戏。游戏包含食物（宝石）和毒药两种元素，AI 需要学会吃到食物并避开毒药。游戏界面支持手动控制、AI 演示、动态速度、暂停、实时动作/奖励显示等功能。
 
