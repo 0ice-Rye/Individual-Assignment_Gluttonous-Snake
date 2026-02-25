@@ -36,7 +36,7 @@ pip install -r requirements.txt
 ## File Structure
 ```
 Snake/
-├── game.py          # Game environment class
+├── game_env.py          # Game environment class
 ├── ql_agent.py      # Q-learning agent
 ├── train.py         # Training script
 ├── main.py          # Main program (menu + manual/AI mode)
@@ -118,7 +118,7 @@ pip install -r requirements.txt
 ## 文件结构
 ```
 Snake_RL/
-├── game.py          # 游戏环境类
+├── game_env.py          # 游戏环境类
 ├── ql_agent.py      # Q-learning智能体
 ├── train.py         # 训练脚本
 ├── main.py          # 主程序（菜单+手动/AI模式）
