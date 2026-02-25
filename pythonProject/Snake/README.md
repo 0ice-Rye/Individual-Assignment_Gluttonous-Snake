@@ -51,7 +51,7 @@ pip install -r requirements.txt
 Run the following command to start training (default: 10,000 episodes, render every 1,000 episodes):
 python train.py
 
-During training, the average score of the last 1,000 episodes is printed every 1,000 episodes. After training, a learning curve training_curve.png is generated, and the Q-table is saved as qtable.pkl.
+  - During training, the average score of the last 1,000 episodes is printed every 1,000 episodes. After training, a learning curve training_curve.png is generated, and the Q-table is saved as qtable.pkl.
 
 2. Run the Game
 After training, start the main program:
@@ -133,7 +133,7 @@ pip install -r requirements.txt
 ```bash
 python train.py
 ```
-训练过程中每1000轮输出一次最近1000轮的平均得分，训练结束后生成学习曲线training_curve.png，并保存Q表为qtable.pkl。
+  - 训练过程中每1000轮输出一次最近1000轮的平均得分，训练结束后生成学习曲线training_curve.png，并保存Q表为qtable.pkl。
 
 2. 运行游戏
 训练完成后，启动主程序：
