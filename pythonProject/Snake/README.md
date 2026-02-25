@@ -1,5 +1,87 @@
 # Individual-Assignment_Gluttonous-Snake
 Q-learning Gluttonous Snake
+# Snake RL - Q-learning based Snake AI
+
+This project is a reinforcement learning game that uses the Q-learning algorithm to train a snake AI. The game includes food (gems) and poison elements. The AI needs to learn to eat food and avoid poison. The game interface supports manual control, AI demonstration, dynamic speed, pause, real-time action/reward display, and more.
+
+## Features
+
+- **Game Mechanics**:
+  - Food (gem): +10 points, disappears after 5 seconds (blinks for the last 3 seconds) and regenerates.
+  - Poison: -5 points, appears 10 seconds after the game starts, disappears after 5 seconds (blinks for the last 3 seconds) and regenerates.
+  - Wall or self-collision: -20 points, game over.
+  - Step penalty: -0.1 to encourage faster food reaching.
+  - Proximity penalty to poison: additional -1.0 when adjacent to poison, guiding the snake away from it.
+- **State Space**: 14-dimensional features, including snake head coordinates, food coordinates, relative direction, distance levels in four directions, and poison information.
+- **Action Space**: Four discrete actions: up, down, left, right.
+- **Q-learning**:
+  - Uses a Q-table to store state-action values, with states discretized into (food direction, danger code, poison direction, poison distance level).
+  - Hyperparameters: α=0.05, γ=0.95, ε decays from 1.0 to 0.01 with decay rate 0.998.
+  - Trained for 10,000 episodes, average score recorded every 1,000 episodes.
+- **User Interface**:
+  - Main menu to select manual mode or AI demo mode.
+  - Manual mode: Control the snake with arrow keys; real-time display of score, time, speed, action, and reward.
+  - Speed dynamically changes based on score: speed 3 (<20), 4 (≥20), 5 (≥50), 6 (≥90).
+  - Pause/resume supported in manual mode.
+  - AI demo mode: Loads trained Q-table and plays automatically.
+  - Game over popup with "Play Again" and "Exit" buttons.
+
+## Installation
+
+Make sure you have Python 3.8+ installed, then install the required libraries using pip:
+
+```bash
+pip install -r requirements.txt
+
+## File Structure
+Snake/
+├── game.py          # Game environment class
+├── ql_agent.py      # Q-learning agent
+├── train.py         # Training script
+├── main.py          # Main program (menu + manual/AI mode)
+├── menu.py          # Main menu interface
+├── button.py        # Button class
+├── requirements.txt # Dependency list
+├── README.md        # Project documentation
+└── training_curve.png # Training curve (generated after running train.py)
+
+## Usage
+1. Train the AI Model
+Run the following command to start training (default: 10,000 episodes, render every 1,000 episodes):
+python train.py
+
+During training, the average score of the last 1,000 episodes is printed every 1,000 episodes. After training, a learning curve training_curve.png is generated, and the Q-table is saved as qtable.pkl.
+
+2. Run the Game
+After training, start the main program:
+
+bash
+python main.py
+
+Select Start Game (Manual): Control the snake with arrow keys and experience the game.
+Select AI Demo: Load the trained qtable.pkl and watch the AI play automatically.
+Select Exit: Quit the program.
+
+## Customization
+Training parameters: Adjust episodes, render_every, etc., in train.py.
+
+Game rules: Modify reward values, poison appearance time, speed thresholds, etc., in game.py.
+
+UI layout: Adjust text positions, button coordinates, etc., in main.py.
+
+Example Training Result
+After 10,000 episodes of training, the AI's average score gradually improves, eventually stabilizing at a certain level. The figure below shows the training curve:
+
+https://training_curve.png
+
+## Notes
+Training can be time-consuming; set render_every=0 to disable rendering and speed up training.
+If AI demo cannot find qtable.pkl, please run train.py first to generate the model file.
+This project uses a discretized Q-table, so performance is limited by the discretization granularity. For higher performance, consider using DQN.
+
+## License
+This project is for educational purposes only. Licensed under the MIT License.
+
 # Snake RL - 基于 Q-learning 的贪吃蛇 AI
 
 本项目是一个使用 Q-learning 算法训练贪吃蛇 AI 的强化学习游戏。游戏包含食物（宝石）和毒药两种元素，AI 需要学会吃到食物并避开毒药。游戏界面支持手动控制、AI 演示、动态速度、暂停、实时动作/奖励显示等功能。
