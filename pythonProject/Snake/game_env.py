@@ -3,15 +3,16 @@ import random
 import numpy as np
 
 class SnakeGame:
-    def __init__(self, grid_size=20, cell_size=25, poison_enabled=False):
+    def __init__(self, grid_size=20, cell_size=25, poison_enabled=False, poison_immediate=False):
         self.grid_size = grid_size
         self.cell_size = cell_size
-        self.margin = 30
+        self.margin = 50
         self.game_width = grid_size * cell_size
         self.game_height = grid_size * cell_size
         self.width = self.game_width + 2 * self.margin
         self.height = self.game_height + 2 * self.margin
         self.poison_enabled = poison_enabled
+        self.poison_immediate = poison_immediate
 
         self.snake = None
         self.direction = None
@@ -22,6 +23,10 @@ class SnakeGame:
         self.steps = None
         self.last_action = None
         self.last_reward = None
+
+        # 用于引导奖励的上一步距离
+        self.prev_food_dist = None
+        self.prev_poison_dist = None
 
         self.game_start_time = 0
         self.food_generate_time = 0
@@ -55,10 +60,22 @@ class SnakeGame:
         self.food_state = 0
         self.food_blink_start = 0
 
-        self.poison = None
+        # 毒药初始化：根据 poison_immediate 决定是否立即放置
+        if self.poison_enabled and self.poison_immediate:
+            self.poison = self._place_poison()
+            self.poison_generate_time = self.game_start_time
+        else:
+            self.poison = None
         self.poison_generate_time = 0
         self.poison_state = 0
         self.poison_blink_start = 0
+
+        # 初始化距离记录
+        head = self.snake[0]
+        self.prev_food_dist = abs(head[0] - self.food[0]) + abs(head[1] - self.food[1])
+        self.prev_poison_dist = None
+        if self.poison is not None:
+            self.prev_poison_dist = abs(head[0] - self.poison[0]) + abs(head[1] - self.poison[1])
 
         return self._get_state()
 
@@ -128,7 +145,8 @@ class SnakeGame:
                 self.food_state = 0
 
         if self.poison_enabled:
-            if self.poison is None and (current_time - self.game_start_time > self.POISON_START_DELAY):
+            # 仅在非立即模式下，且毒药为None时，检查延迟生成
+            if not self.poison_immediate and self.poison is None and (current_time - self.game_start_time > self.POISON_START_DELAY):
                 self.poison = self._place_poison()
                 self.poison_generate_time = current_time
                 self.poison_state = 0
@@ -154,6 +172,9 @@ class SnakeGame:
         self.direction = new_dir
         new_head = (self.snake[0][0] + new_dir[0], self.snake[0][1] + new_dir[1])
 
+        old_food_dist = self.prev_food_dist
+        old_poison_dist = self.prev_poison_dist
+
         reward = 0
         self.steps += 1
         current_time = pygame.time.get_ticks()
@@ -174,83 +195,138 @@ class SnakeGame:
 
         if collided:
             self.done = True
-            reward = -20
+            reward = -200
         else:
             self.snake.insert(0, new_head)
             if ate_food:
                 self.score += 10
-                reward = 10
+                reward = 50
                 self.food = self._place_food()
                 self.food_generate_time = current_time
                 self.food_state = 0
+                self.prev_food_dist = abs(new_head[0] - self.food[0]) + abs(new_head[1] - self.food[1])
             elif ate_poison:
                 self.score -= 5
-                reward = -8
+                reward = -50
                 self.poison = self._place_poison()
                 self.poison_generate_time = current_time
                 self.poison_state = 0
+                self.prev_poison_dist = abs(new_head[0] - self.poison[0]) + abs(new_head[1] - self.poison[1])
             else:
                 self.snake.pop()
                 reward = -0.1
-                # 毒药接近惩罚：仅在相邻格（距离≤1）时惩罚，避免蛇过度恐慌
-                if self.poison_enabled and self.poison is not None:
-                    poison_dist = abs(self.poison[0] - new_head[0]) + abs(self.poison[1] - new_head[1])
-                    if poison_dist <= 1:
-                        reward -= 1.0  # 相邻格惩罚
-                    # 如果希望奖励远离，可在此处添加 elif poison_dist >= 5: reward += 0.1 等逻辑
+
+                new_food_dist = abs(new_head[0] - self.food[0]) + abs(new_head[1] - self.food[1])
+                new_poison_dist = None if self.poison is None else abs(new_head[0] - self.poison[0]) + abs(
+                    new_head[1] - self.poison[1])
+
+                guide_reward = 0
+
+                # 接近食物奖励
+                if new_food_dist == 1:
+                    guide_reward += 0.5
+                elif new_food_dist == 2:
+                    guide_reward += 0.3
+
+                # 计算两个惩罚值
+                penalty = 0
+                # 远离食物惩罚
+                far_from_food = (new_food_dist > old_food_dist)
+                if far_from_food:
+                    penalty = -0.3  # 考虑与毒药惩罚比较
+
+                # 靠近毒药惩罚
+                poison_penalty = 0
+                if self.poison is not None and new_poison_dist is not None:
+                    if new_poison_dist <= 1:
+                        poison_penalty = -0.5
+                    elif new_poison_dist == 2:
+                        poison_penalty = -0.3
+
+                # 取最负的惩罚（min因为都是负数）
+                worst_penalty = min(penalty, poison_penalty)
+                guide_reward += worst_penalty
+
+                reward += guide_reward
+
+                self.prev_food_dist = new_food_dist
+                self.prev_poison_dist = new_poison_dist
 
         self.last_action = action
         self.last_reward = reward
         return self._get_state(), reward, self.done
 
     def render(self, screen):
-        """绘制游戏画面（只绘制游戏区域）"""
-        screen.fill((0, 0, 0))
+        """绘制游戏画面（白色背景，彩色元素）"""
+        # 填充白色背景
+        screen.fill((255, 255, 255))
         offset = self.margin
 
+        # 绘制游戏区域背景（浅灰色，可选）
         game_rect = pygame.Rect(offset, offset, self.game_width, self.game_height)
-        pygame.draw.rect(screen, (10, 10, 10), game_rect)
+        pygame.draw.rect(screen, (240, 240, 240), game_rect)  # 极浅灰背景
 
+        # 绘制网格线（浅灰色）
+        grid_color = (200, 200, 200)
         for x in range(0, self.game_width + 1, self.cell_size):
-            pygame.draw.line(screen, (40, 40, 40), (offset + x, offset),
+            pygame.draw.line(screen, grid_color, (offset + x, offset),
                              (offset + x, offset + self.game_height))
         for y in range(0, self.game_height + 1, self.cell_size):
-            pygame.draw.line(screen, (40, 40, 40), (offset, offset + y),
+            pygame.draw.line(screen, grid_color, (offset, offset + y),
                              (offset + self.game_width, offset + y))
 
+        # 绘制蛇身（深绿色，与白色背景对比）
         for i, segment in enumerate(self.snake):
             if i == 0:
                 continue
-            color = (0, 200, 0)
+            color = (0, 150, 0)  # 深绿
             rect = pygame.Rect(offset + segment[0] * self.cell_size,
                                offset + segment[1] * self.cell_size,
                                self.cell_size, self.cell_size)
             pygame.draw.rect(screen, color, rect)
-            pygame.draw.rect(screen, (0, 100, 0), rect, 2)
+            pygame.draw.rect(screen, (0, 80, 0), rect, 2)  # 深绿色边框
 
+        # 绘制蛇头（圆形，亮绿色）
         head = self.snake[0]
         head_center = (offset + head[0] * self.cell_size + self.cell_size // 2,
                        offset + head[1] * self.cell_size + self.cell_size // 2)
         head_radius = self.cell_size // 2 - 2
-        pygame.draw.circle(screen, (0, 255, 0), head_center, head_radius)
-        pygame.draw.circle(screen, (0, 150, 0), head_center, head_radius, 2)
+        pygame.draw.circle(screen, (0, 200, 0), head_center, head_radius)
+        pygame.draw.circle(screen, (0, 100, 0), head_center, head_radius, 2)
+
+        # 眼睛位置（根据方向计算）
         eye_offset = head_radius // 2
         eye_radius = 2
-        if self.direction == (1, 0):
+        if self.direction == (1, 0):  # 右
             eye1 = (head_center[0] + eye_offset, head_center[1] - eye_offset)
             eye2 = (head_center[0] + eye_offset, head_center[1] + eye_offset)
-        elif self.direction == (-1, 0):
+        elif self.direction == (-1, 0):  # 左
             eye1 = (head_center[0] - eye_offset, head_center[1] - eye_offset)
             eye2 = (head_center[0] - eye_offset, head_center[1] + eye_offset)
-        elif self.direction == (0, -1):
+        elif self.direction == (0, -1):  # 上
             eye1 = (head_center[0] - eye_offset, head_center[1] - eye_offset)
             eye2 = (head_center[0] + eye_offset, head_center[1] - eye_offset)
-        else:
+        else:  # 下
             eye1 = (head_center[0] - eye_offset, head_center[1] + eye_offset)
             eye2 = (head_center[0] + eye_offset, head_center[1] + eye_offset)
-        pygame.draw.circle(screen, (255, 255, 255), eye1, eye_radius)
-        pygame.draw.circle(screen, (255, 255, 255), eye2, eye_radius)
 
+        # 绘制眼睛：根据是否死亡选择画圆或画X
+        if self.done:
+            # 死亡时画X（黑色）
+            x_size = eye_radius * 2
+            for eye in (eye1, eye2):
+                pygame.draw.line(screen, (0, 0, 0),
+                                 (eye[0] - x_size, eye[1] - x_size),
+                                 (eye[0] + x_size, eye[1] + x_size), 2)
+                pygame.draw.line(screen, (0, 0, 0),
+                                 (eye[0] + x_size, eye[1] - x_size),
+                                 (eye[0] - x_size, eye[1] + x_size), 2)
+        else:
+            # 正常时画圆
+            pygame.draw.circle(screen, (0, 0, 0), eye1, eye_radius)
+            pygame.draw.circle(screen, (0, 0, 0), eye2, eye_radius)
+
+        # 绘制食物（金色菱形，消失时闪烁）
         if self.food is not None:
             food_x = offset + self.food[0] * self.cell_size + self.cell_size // 2
             food_y = offset + self.food[1] * self.cell_size + self.cell_size // 2
@@ -261,34 +337,40 @@ class SnakeGame:
                 (food_x - self.cell_size // 2 + 2, food_y),
             ]
             current_time = pygame.time.get_ticks()
-            if self.food_state == 1:
+            if self.food_state == 1:  # 闪烁状态
                 if (current_time // 200) % 2 == 0:
-                    color = (255, 200, 0)
+                    color = (255, 215, 0)  # 金色
                 else:
-                    color = (255, 100, 0)
+                    color = (255, 165, 0)  # 橙色
             else:
-                color = (255, 215, 0)
+                color = (255, 215, 0)  # 金色
             pygame.draw.polygon(screen, color, points)
+            # 高光（小白点）
             pygame.draw.circle(screen, (255, 255, 255), (food_x - 2, food_y - 2), 2)
 
+        # 绘制毒药（圆形，中间有红色高光）
         if self.poison_enabled and self.poison is not None:
             poison_x = offset + self.poison[0] * self.cell_size + self.cell_size // 2
             poison_y = offset + self.poison[1] * self.cell_size + self.cell_size // 2
             radius = self.cell_size // 2 - 2
             current_time = pygame.time.get_ticks()
-            if self.poison_state == 1:
+
+            # 确定颜色（闪烁效果）
+            if self.poison_state == 1:  # 闪烁状态
                 if (current_time // 200) % 2 == 0:
-                    base_color = (128, 0, 128)
+                    base_color = (128, 0, 128)  # 紫色
                 else:
-                    base_color = (255, 0, 255)
+                    base_color = (255, 255, 255)  # 白色
             else:
-                base_color = (128, 0, 128)
+                base_color = (128, 0, 128)  # 紫色
+
+            # 绘制圆形
             pygame.draw.circle(screen, base_color, (poison_x, poison_y), radius)
-            pygame.draw.circle(screen, (255, 255, 255), (poison_x, poison_y), radius, 2)
-            offset_cross = radius // 2
-            pygame.draw.line(screen, (255, 255, 255),
-                             (poison_x - offset_cross, poison_y - offset_cross),
-                             (poison_x + offset_cross, poison_y + offset_cross), 2)
-            pygame.draw.line(screen, (255, 255, 255),
-                             (poison_x + offset_cross, poison_y - offset_cross),
-                             (poison_x - offset_cross, poison_y + offset_cross), 2)
+
+            # 绘制红色高光（中心小圆）
+            highlight_radius = max(2, radius // 3)
+            highlight_color = (255, 100, 100)  # 亮红色
+            pygame.draw.circle(screen, highlight_color, (poison_x, poison_y), highlight_radius)
+
+            # 白色边框
+            pygame.draw.circle(screen, (255, 255, 255), (poison_x, poison_y), radius, 1)
