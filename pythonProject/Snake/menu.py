@@ -5,7 +5,7 @@ from button import Button
 def show_menu():
     pygame.init()
     screen = pygame.display.set_mode((500, 400))
-    pygame.display.set_caption("贪吃蛇 - 主菜单")
+    pygame.display.set_caption("Snake - Main Menu")
     clock = pygame.time.Clock()
 
     # 颜色
