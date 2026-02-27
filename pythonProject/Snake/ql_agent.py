@@ -4,7 +4,7 @@ from collections import defaultdict
 
 class QLAgent:
     def __init__(self, action_size=4, alpha=0.05, gamma=0.95,
-                 epsilon=1.0, epsilon_min=0.01, epsilon_decay=0.998):
+                 epsilon=1.0, epsilon_min=0.01, epsilon_decay=0.999):
         self.action_size = action_size
         self.alpha = alpha
         self.gamma = gamma
@@ -34,10 +34,10 @@ class QLAgent:
             poison_dist_norm = state[13]
             angle_poison = np.arctan2(dy_poison, dx_poison)
             poison_dir = int((angle_poison + np.pi) / (2 * np.pi / 8)) % 8
-            poison_dist_level = int(poison_dist_norm * 3)  # 0-2
+            poison_dist_level = int(poison_dist_norm * 5)  # 0-4
         else:
             poison_dir = 8
-            poison_dist_level = 3  # 特殊值表示无毒药
+            poison_dist_level = 5  # 特殊值表示无毒药
 
         return (food_dir, danger_code, poison_dir, poison_dist_level)
 
