@@ -70,7 +70,7 @@ Make sure Python 3.8+ is installed, then install required libraries using pip:
 pip install -r requirements.txt
 ```
 
-## 文件结构
+## File Structure
 ```
 Snake/
 ├── button.py            # Simple button class
