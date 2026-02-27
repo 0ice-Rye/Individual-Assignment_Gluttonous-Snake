@@ -1,4 +1,4 @@
-# Individual-Assignment_Gluttonous-Snake
+# Individual Assignment_Gluttonous Snake
 # Gluttonous Snake - Q-learning Based Snake AI
 
 This project is a reinforcement learning game that trains a Snake AI using the Q-learning algorithm. The game includes two elements: food (gems) and poison. Through multi-stage learning, the AI learns to avoid poison while collecting as many gems as possible. The interface supports manual control, AI demo, dynamic speed adjustment, pause, and real-time action/reward display.
@@ -27,8 +27,8 @@ This project is a reinforcement learning game that trains a Snake AI using the Q
    - Food direction: 8 types
    - Danger encoding: distance levels in four directions encoded as 8-bit integer (256 types)
    - Poison direction: 8 types + 1 type "no poison"
-   - Poison distance level: 4 levels (0–2 for distance, 3 for no poison)
-   - Total state count ≈ 73,728, manageable Q-table.
+   - Poison distance level: 6 levels (0–4 for distance, 5 for no poison)
+   - Total state count ≈ 110,592, manageable Q-table.
    - Hyperparameters: α = 0.05, γ = 0.95, ε decays from 1.0 to 0.01, decay rate 0.999.
 - **Multi-stage Training**：
  1. No-poison stage: learn basic pathfinding and obstacle avoidance (40% of total episodes).
@@ -159,8 +159,8 @@ https://multi_stage_curve.png
    - 食物方向：8 种
    - 危险编码：四个方向距离等级编码为 8 位整数（256 种）
    - 毒药方向：8 种 + 1 种“无毒药”
-   - 毒药距离等级：4 级（0～2 对应距离，3 表示无毒药）
-   - 总状态数 ≈ 73,728，Q 表可管理。
+   - 毒药距离等级：6 级（0～4 对应距离，5 表示无毒药）
+   - 总状态数 ≈ 110,592，Q 表可管理。
    - 超参数：α = 0.05，γ = 0.95，ε 从 1.0 衰减至 0.01，衰减率 0.999。
 - **多阶段训练**：
  1. 无毒药阶段：学习基础寻路和避障（总轮数 40%）。
