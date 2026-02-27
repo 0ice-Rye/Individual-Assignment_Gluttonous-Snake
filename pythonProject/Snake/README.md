@@ -119,8 +119,8 @@ This project is for educational purposes only. Licensed under the MIT License.
  2. 毒药延迟阶段：毒药延迟 10 秒出现，适应毒药存在（30%）。
  3. 毒药立即阶段：毒药全程存在，强化躲避能力（30%）。
 
-- 总训练轮数 30,000，每 1000 轮记录平均得分。
-- 每阶段结束后保存 Q 表（qtable_phase1.pkl、qtable_phase2.pkl、qtable_final.pkl）。
+   - 总训练轮数 30,000，每 1000 轮记录平均得分。
+   - 每阶段结束后保存 Q 表（qtable_phase1.pkl、qtable_phase2.pkl、qtable_final.pkl）。
 
 ### **用户界面**：
 - **主菜单**：选择**手动模式**或**AI 演示模式**。
@@ -128,14 +128,14 @@ This project is for educational purposes only. Licensed under the MIT License.
   - 方向键控制。
   - 实时显示：得分、游戏时间、当前速度（帧率）、上一步动作及奖励。
   - 速度随得分动态变化：
-   - <20：3 fps
-   - ≥20：4 fps
-   - ≥40：5 fps
-   - ≥70：6 fps
-   - ≥90：7 fps
-   - ≥120：8 fps
-   - ≥150：9 fps
-   - ≥180：10 fps
+    - <20：3 fps
+    - ≥20：4 fps
+    - ≥40：5 fps
+    - ≥70：6 fps
+    - ≥90：7 fps
+    - ≥120：8 fps
+    - ≥150：9 fps
+    - ≥180：10 fps
   - 暂停/继续（右上角按钮）。
   - 游戏结束浮层，可选择重玩或退出。
 - **AI 演示模式**：
