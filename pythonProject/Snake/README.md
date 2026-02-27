@@ -1,86 +1,134 @@
 # Individual-Assignment_Gluttonous-Snake
-# Gluttonous Snake - Q-learning based Snake AI
+# Gluttonous Snake - Q-learning Based Snake AI
 
-This project is a reinforcement learning game that uses the Q-learning algorithm to train a snake AI. The game includes food (gems) and poison elements. The AI needs to learn to eat food and avoid poison. The game interface supports manual control, AI demonstration, dynamic speed, pause, real-time action/reward display, and more.
+This project is a reinforcement learning game that trains a Snake AI using the Q-learning algorithm. The game includes two elements: food (gems) and poison. Through multi-stage learning, the AI learns to avoid poison while collecting as many gems as possible. The interface supports manual control, AI demo, dynamic speed adjustment, pause, and real-time action/reward display.
 
 ## Features
 
-- **Game Mechanics**:
-  - Food (gem): +10 points, disappears after 5 seconds (blinks for the last 3 seconds) and regenerates.
-  - Poison: -5 points, appears 10 seconds after the game starts, disappears after 5 seconds (blinks for the last 3 seconds) and regenerates.
-  - Wall or self-collision: -20 points, game over.
-  - Step penalty: -0.1 to encourage faster food reaching.
-  - Proximity penalty to poison: additional -1.0 when adjacent to poison, guiding the snake away from it.
-- **State Space**: 14-dimensional features, including snake head coordinates, food coordinates, relative direction, distance levels in four directions, and poison information.
+### **Game Mechanics**：
+- Food (Gem): +10 score, internal reward +50. Blinks for 3 seconds after 5 seconds, then respawns.
+- Poison: -5 score, internal reward -50. Appears 10 seconds after game start (configurable), blinks for 3 seconds after 5 seconds, then respawns.
+- Wall collision / self-collision: internal reward -200, game over.
+- Step penalty: -0.1 to encourage faster food collection.
+- Guidance reward (to accelerate learning):
+   - Approaching food: +0.5 for distance 1 cell, +0.3 for distance 2 cells.
+   - Moving away from food: -0.3.
+   - Approaching poison: -0.5 for distance ≤1 cell, -0.3 for distance = 2 cells.
+   - When multiple penalties are triggered simultaneously, only the most negative one is applied (no stacking).
+### **AI Learning**：
+- **State Space**: 14-dimensional features, including:
+   - Normalized coordinates of snake head
+   - Normalized coordinates and relative direction of food
+   - Distance levels (0–3) in four directions
+   - Poison existence flag, relative direction, normalized distance
 - **Action Space**: Four discrete actions: up, down, left, right.
-- **Q-learning**:
-  - Uses a Q-table to store state-action values, with states discretized into (food direction, danger code, poison direction, poison distance level).
-  - Hyperparameters: α=0.05, γ=0.95, ε decays from 1.0 to 0.01 with decay rate 0.998.
-  - Trained for 10,000 episodes, average score recorded every 1,000 episodes.
-- **User Interface**:
-  - Main menu to select manual mode or AI demo mode.
-  - Manual mode: Control the snake with arrow keys; real-time display of score, time, speed, action, and reward.
-  - Speed dynamically changes based on score: speed 3 (<20), 4 (≥20), 5 (≥50), 6 (≥90).
-  - Pause/resume supported in manual mode.
-  - AI demo mode: Loads trained Q-table and plays automatically.
-  - Game over popup with "Play Again" and "Exit" buttons.
+- **Q-learning**：
+   - Q-table discretization: (food direction, danger encoding, poison direction, poison distance level)
+   - Food direction: 8 types
+   - Danger encoding: distance levels in four directions encoded as 8-bit integer (256 types)
+   - Poison direction: 8 types + 1 type "no poison"
+   - Poison distance level: 4 levels (0–2 for distance, 3 for no poison)
+   - Total state count ≈ 73,728, manageable Q-table.
+   - Hyperparameters: α = 0.05, γ = 0.95, ε decays from 1.0 to 0.01, decay rate 0.999.
+- **Multi-stage Training**：
+ 1. No-poison stage: learn basic pathfinding and obstacle avoidance (40% of total episodes).
+ 2. Poison-delay stage: poison appears after 10s delay, adapt to poison presence (30%).
+ 3. Poison-immediate stage: poison exists throughout, enhance avoidance ability (30%).
 
-## Installation
+   - Total training episodes: 30,000, average score recorded every 1000 episodes.
+   - Save Q-table after each stage (qtable_phase1.pkl, qtable_phase2.pkl, qtable_final.pkl).
 
-Make sure you have Python 3.8+ installed, then install the required libraries using pip:
+### **User Interface**：
+- **Main Menu**：Select**Manual Mode** or **AI AI Demo Mode**.
+- **Manual Mode**：
+  - Control with arrow keys.
+  - Real-time display: score, game time, current speed (FPS), last action and reward.
+  - Speed changes dynamically with score:
+    - <20：3 fps
+    - ≥20：4 fps
+    - ≥40：5 fps
+    - ≥70：6 fps
+    - ≥90：7 fps
+    - ≥120：8 fps
+    - ≥150：9 fps
+    - ≥180：10 fps
+  - Pause / resume (button in top-right corner).
+  - Game-over overlay with replay or exit options.
+- **AI Demo Mode**：
+  - Load pre-trained Q-table (qtable_final.pkl) and play automatically.
+  - Same interface information as manual mode.
+  - "Exit" button in top-right corner returns to main menu.
+- **Visual Style**：
+  - White background, black text, light gray game grid.
+  - Snake: dark green body, round head with directional eyes (black when alive, X when dead).
+  - Food: golden diamond (blinks before disappearing).
+  - Poison: purple circle with red highlight in center (blinks before disappearing).
 
+## Install Dependencies
+Make sure Python 3.8+ is installed, then install required libraries using pip:
 ```bash
 pip install -r requirements.txt
 ```
 
-## File Structure
+## 文件结构
 ```
 Snake/
+├── button.py            # Simple button class
 ├── game_env.py          # Game environment class
-├── ql_agent.py      # Q-learning agent
-├── train.py         # Training script
-├── main.py          # Main program (menu + manual/AI mode)
-├── menu.py          # Main menu interface
-├── button.py        # Button class
-├── requirements.txt # Dependency list
-├── README.md        # Project documentation
-└── training_curve.png # Training curve (generated after running train.py)
+├── main.py              # Main program (menu + manual/AI mode)
+├── menu.py              # Main menu interface
+├── ql_agent.py          # Q-learning agent
+├── train.py             # Multi-stage training script
+├── test.py              # Test script
+├── requirements.txt     # Dependency list
+├── README.md            # Project documentation
+├── multi_stage_curve.png # Training curve (generated after running train.py)
+├── qtable_phase1.pkl    # Stage 1 Q-table (generated)
+├── qtable_phase2.pkl    # Stage 2 Q-table (generated)
+└── qtable_final.pkl     # Final Q-table (generated)
 ```
 
 ## Usage
-1. Train the AI Model
-Run the following command to start training (default: 10,000 episodes, render every 1,000 episodes):
+1. Train AI Model
+Run the training script. By default, it performs 30,000 episodes of three-stage training, rendered every 1,000 episodes:
+```bash
 python train.py
-
-  - During training, the average score of the last 1,000 episodes is printed every 1,000 episodes. After training, a learning curve training_curve.png is generated, and the Q-table is saved as qtable.pkl.
+```
+  - Average score of the last 1,000 episodes is printed every 1,000 episodes during training.
+  - After training, a combined learning curve multi_stage_curve.png is generated, and the final Q-table is saved as qtable_final.pkl.
+  - To speed up training, set render_every in train.py to 0 to disable rendering.
 
 2. Run the Game
 After training, start the main program:
-
 ```bash
 python main.py
 ```
+Select mode via menu:
+  - Start Game – Control the snake with keyboard arrow keys.
+  - AI Demo – Watch the trained AI play automatically.
+  - Exit – Quit the program.
 
-  - Select Start Game: Control the snake with arrow keys and experience the game.
-  - Select AI Demo: Load the trained qtable.pkl and watch the AI play automatically.
-  - Select Exit: Quit the program.
+## Custom Configuration
+| File | Parameter | Description |
+| :------: | :------: | :------: |
+| game_env.py |  grid_size, cell_size  | Change board size |
+| game_env.py |  POISON_START_DELAY  | Poison appearance delay (ms) |
+| game_env.py |  FOOD_LIFETIME, POISON_LIFETIME  | Item lifetime (ms) |
+| game_env.py |  Reward values in step()  | Modify internal rewards励 |
+| main.py |  get_speed_from_score()  | Adjust speed thresholds |
+| train.py |  total_episodes  | Change total training episodes |
+| train.py |  Episode ratio of each stage  | Adjust stage length |
+| ql_agent.py |  alpha, gamma, epsilon_decay  | Adjust learning hyperparameters |
 
-## Customization
-Training parameters: Adjust episodes, render_every, etc., in train.py.
-Game rules: Modify reward values, poison appearance time, speed thresholds, etc., in game.py.
-UI layout: Adjust text positions, button coordinates, etc., in main.py.
-
-## Example Training Result
-After 10,000 episodes of training, the AI's average score gradually improves, eventually stabilizing at a certain level. The figure below shows the training curve:
-https://training_curve.png
+## Training Result Example
+After 30,000 training episodes, the AI's average score (over the last 1,000 episodes) usually improves significantly. The figure below shows the three-stage training curve:
+https://multi_stage_curve.png
 
 ## Notes
-  - Training can be time-consuming; set render_every=0 to disable rendering and speed up training.
-  - If AI demo cannot find qtable.pkl, please run train.py first to generate the model file.
-  - This project uses a discretized Q-table, so performance is limited by the discretization granularity. For higher performance, consider using DQN.
-
-## License
-This project is for educational purposes only. Licensed under the MIT License.
+  - Training may take a long time. Set render_every=0 to disable rendering for faster training.
+  - AI demo requires the pre-trained Q-table file qtable_final.pkl. If missing, run train.py first.
+  - This project uses a discretized Q-table; performance is limited by discretization granularity. For more complex behaviors, consider upgrading to DQN.
+  - Press "Pause" in manual mode to pause the game. The central "Play" button resumes after a 3-second countdown.
 
 
 # Gluttonous Snake - 基于 Q-learning 的贪吃蛇 AI
